@@ -19,7 +19,7 @@ The script launches a pupputeer.js chromium instance, which it uses to allow you
 
 ## Usage
 
-  1. Clone the repo `git clone https://github.com/knyzorg/pluralsight-scraper`
+  1. Clone the repo `git clone https://github.com/Fares92/pluralsight-scraper`
 
   2. Run `npm install` to install the dependencies
 
@@ -35,4 +35,4 @@ Yes it is: [Refer to Section 5](https://www.pluralsight.com/terms)
 
 ## Detection Evasion
 
-There is a relatively high likely-hood that your account will be flagged for running this script. It is very difficult to evade such things and the current strategy is to naively wait 30 seconds between requests.
+There is a relatively high likely-hood that your account will be flagged for running this script. It is very difficult to evade such things and the current strategy is to naively wait 240 seconds between requests.

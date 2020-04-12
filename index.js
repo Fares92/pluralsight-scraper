@@ -29,40 +29,19 @@ async function downloadCourse(courseId, cookie) {
         headers: { cookie }
     }).then((response) => response.json());
 
-    let videos = courseData.modules
-        // Get video items
-        .map(module => module.clips)
-        // Flatten from module structure
-        .reduce((a, b) => [...a, ...b], [])
-        // Reformat a bit, get rid of all the unncessary information, generate title
-        .map(async (video, index) => {
-            // Wait 30 seconds after each request to avoid throttling
-            await wait(30000 * index);
-            // Add numbering for proper sequencing
-            // Strip title of illegal chars
-            const title = `${index + 1}. ${video.title.replace(/[|&;$%@"<>()+,]/g, "")}`;
 
-            console.log(`Retrieving metadata for: ${title}`);
-
-            // Get video url
-            const url = await getVideoUrl(video.clipId);
-
-            return {
-                title,
-                url
-            };
-        });
-
-    const videoFeed = {
-        [Symbol.asyncIterator]() {
-            return {
-                index: 0,
-                async next() {
-                    return { value: (await videos[this.index++]), done: this.index + 1 == videos.length };
-                }
-            };
-        }
-    };
+        
+        
+    // const videoFeed = {
+    //     [Symbol.asyncIterator]() {
+    //         return {
+    //             index: 0,
+    //             async next() {
+    //                 return { value: (await videos[this.index++]), done: this.index + 1 == videos.length };
+    //             }
+    //         };
+    //     }
+    // };
 
     const videoPath = path.join(__dirname, "videos");
     const coursePath = path.join(videoPath, courseId.replace(/[|&;$%@"<>()+,]/g, ""));
@@ -73,18 +52,39 @@ async function downloadCourse(courseId, cookie) {
     if (!fs.existsSync(coursePath)) {
         fs.mkdirSync(coursePath);
     }
+    // for (let country of Object.keys(obj)) {
+    //     var capital = obj[country];
+    //     console.log(country, capital);
+    // }
+    let videos = await courseData.modules
+    // Get video items
+    .map(module => module.clips)
+    // Flatten from module structure
+    .reduce((a, b) => [...a, ...b], [])
+    // Reformat a bit, get rid of all the unncessary information, generate title
+    .map(async (video, index) => {
+        
+        
+        // Wait 240 seconds after each request to avoid throttling
+        await wait(240000 * index);
+        // Add numbering for proper sequencing
+        // Strip title of illegal chars
+        const title = `${index + 1}. ${video.title.replace(/[|&;$%@"<>()+,]/g, "")}`;
+        console.log('title',title);
+        console.log(`Retrieving metadata for: ${title}`);
 
-    for await (let video of videoFeed) {
-        const file = path.join(coursePath, video.title + ".mp4");
+        // Get video url
+        const url = await getVideoUrl(video.clipId);
+
+        const file = path.join(coursePath, title + ".mp4");
 
         if (!fs.existsSync(file)) {
-            console.log(`Downloading video file for: ${video.title + ".mp4"}`);
-            const data = await fetch(video.url);
+            console.log(`Downloading video file for: ${title + ".mp4"}`);
+            const data = await fetch(url);
             const fileStream = fs.createWriteStream(file);
             data.body.pipe(fileStream);
         }
-    }
-
+    });
 
 }
 
@@ -136,7 +136,7 @@ require('yargs')
             try {
                 await downloadCourse(courseId, fs.readFileSync("./cookies.txt").toString());
             } catch (error) {
-                console.error("Something went wrong. Double check the URL and try logging in again.")
+                console.error("Something went wrong. Double check the URL and try logging in again.", error)
                 process.exit(1);
             }
             
